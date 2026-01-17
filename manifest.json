@@ -10,5 +10,8 @@
 	"background": {
 		"service_worker": "background.js"
 	},
+	"action": {
+		"default_title": "Peersky History"
+	},
 	"options_page": "view.html"
 }

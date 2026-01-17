@@ -16,7 +16,7 @@ const FORBIDDEN_PROTOCOLS = ['peersky:', 'chrome-extension:', 'devtools:'];
 
 main();
 
-async function main () {
+async function main() {
   const db = await idb.openDB(HISTORY_DB, HISTORY_VERSION, {
     upgrade
   });
@@ -24,10 +24,15 @@ async function main () {
   let aborter = null;
 
   chrome.webNavigation.onCompleted.addListener(onCompleted);
+  
+  // Open view.html in a new tab when extension icon is clicked
+  chrome.action.onClicked.addListener(() => {
+    chrome.tabs.create({ url: chrome.runtime.getURL('view.html') });
+  });
   globalThis.db = db;
   globalThis.search = search;
 
-  async function * search (query = '', maxResults = MAX_RESULTS, _signal) {
+  async function* search(query = '', maxResults = MAX_RESULTS, _signal) {
     let signal = _signal;
     if (!signal) {
       if (aborter) aborter.abort();
@@ -47,7 +52,7 @@ async function main () {
       .store.index('timestamp')
       .openCursor(range, 'prev');
 
-    while(cursor) {
+    while (cursor) {
       const {key, value} = cursor;
       start = key;
       const { search: searchString, url } = value;
@@ -59,7 +64,7 @@ async function main () {
         const range = IDBKeyRange.upperBound(start);
         cursor = await db
           .transaction(HISTORY_STORE, 'readonly')
-        .  store.index('timestamp')
+          .store.index('timestamp')
           .openCursor(range, 'prev');
       }
       if (signal && signal.aborted) {
